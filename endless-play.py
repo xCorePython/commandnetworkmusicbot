@@ -2,7 +2,7 @@ import discord, youtube_dl, subprocess, datetime, json, os
 
 sys_loop = 1
 sys_data = 772380469094252554
-command_prefix = 't.'
+command_prefix = os.getenv('BOT_PREFIX')
 client = discord.Client()
 vcch = int(os.getenv('VCID'))
 queuech = int(os.getenv('QUEUEID'))
@@ -32,7 +32,7 @@ def timestamp():
 class Queue:
 	def __init__(self):
 		self.queue = []
-		self._volume = 0.1
+		self._volume = 1
 		self.skipped = False
 	def add(self, value):
 		self.queue.append(value)
@@ -147,8 +147,11 @@ async def commands(command, message):
 		sendms.add_field(name='Time', value='{} / {}'.format(datetime.timedelta(seconds=int(nowpl)),datetime.timedelta(seconds=int(info['duration']))),inline=False)
 		sendms.add_field(name='Codec', value=info['streams'][0]['codec_long_name'], inline=False)
 		sendms.add_field(name='Bitrate', value='{}kbps / {}'.format(str(int(info['format']['bit_rate'])/1000),  info['streams'][0]['channel_layout']), inline=False)
-		sendms.add_field(name='Volume', value='{}%'.format(str(int(float(client.get_channel(vcch).guild.voice_client.source.volume)*100))), inline=False)
-		sendms.add_field(name='Equalizer', value='Bass: x6.0')
+		try:
+			sendms.add_field(name='Volume', value='{}%'.format(str(int(float(client.get_channel(vcch).guild.voice_client.source.volume)*100))), inline=False)
+		except:
+			sendms.add_field(name='Volume', value='100% (Can\'t change)', inline=False)
+		sendms.add_field(name='Equalizer', value='Bass: x6')
 		sendms.set_thumbnail(url=str(info['thumbnails'][len(info['thumbnails']) - 1]['url']))
 		sendms.set_footer(text='Started at {} | FireEqualizer from FFmpeg'.format(start2))
 		await message.channel.send(embed=sendms)
@@ -275,7 +278,7 @@ async def on_ready():
 		    download(links[n])
 		print('Loaded queue')
 		first.append('Converted')
-	q.seteq({'before_options': '-reconnect 1', 'options': '-vn -af \"firequalizer=gain_entry=\'entry(0,6);entry(10,8);entry(30,-5);entry(2500,-5);entry(8000, 0);entry(9000,10);entry(22000,10)\'\"',})
+	q.seteq({'before_options': '-reconnect 1', 'options': '-vn -af \"firequalizer=gain_entry=\'entry(0,6);entry(10,6);entry(30,0);entry(2500,0);entry(6300, 0);entry(16000,10)\'\"',})
 	try:
 		await client.get_channel(vcch).connect()
 		q.set(client.get_channel(vcch).guild.voice_client)
@@ -377,7 +380,7 @@ async def on_message(message):
 				await commands('queue', message)
 				return
 		except:
-			await message.channel.send(':x: **Failed run command** {}')
+			await message.channel.send(':x: **Failed run command**')
 
 def finalize(info_dict):
 	try:
