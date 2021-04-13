@@ -2,7 +2,7 @@ import discord, youtube_dl, subprocess, datetime, json, os, re
 
 sys_loop = 1
 sys_data = 772380469094252554
-command_prefix = 't.'
+command_prefix = os.getenv('BOT_PREFIX')
 client = discord.Client()
 vcch = int(os.getenv('VCID'))
 queuech = int(os.getenv('QUEUEID'))
